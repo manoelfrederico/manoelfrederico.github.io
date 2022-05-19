@@ -1,9 +1,44 @@
 <!DOCTYPE html>
+<script type="text/javascript" src="javascript.js"></script>
+<style>
+    h1 {
+        font-size: 500%;
+    }
+    input {
+        font-size: 400%;
+    }
+    #conta {
+        color : red;
+        text-align: center;
+    }
+    #resumo {
+        font-size: 80%;
+        color : black;
+        text-align: right;
+        position: absolute;
+        bottom: 0;
+        left: 80%;
+    }
+    button {
+        width: 80%;
+        background-color: lightblue;
+        border-color: white;
+        font-size: 500%;
+    }
+</style>
 <html>
-<body>
-
-<h1>Testes do Mateus</h1>
-<p>Vamos começar...</p>
-
-</body>
+    <body onload="body_onload()">
+        <h1>Matemática para Mateus</h1>
+        <h1 id="conta"></h1>
+        <button id="comecar" onclick="comecar()">começar</button>
+        <br>
+        <input type="text" id="resposta"/>
+        <br>
+        <button id="confirmar" onclick="confirmar()">confirmar</button>
+        <img id="sonic" src="sonic.gif" />
+        <img id="eggman" src="eggman.gif" />
+        <div>
+            <h1 id="resumo"></h1>
+        </div>
+    </body>
 </html>
