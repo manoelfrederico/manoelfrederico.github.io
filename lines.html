@@ -6,14 +6,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JavaScript - Drawing a Line</title>
+    <title></title>
 </head>
 
 <body>
-
-    <h1>JavaScript - Drawing a Line</h1>
-
-    <canvas id="canvas" height="600" width="1000">
+    <canvas id="canvas" style="width:97%; height=100%;">
     </canvas>
     <script>
 	function draw() {
@@ -22,6 +19,7 @@
 			return;
 		}
 		let i = 0;
+		let inc = 1;
 		const ctx = canvas.getContext('2d');
 		ctx.strokeStyle = 'black';
 		ctx.lineWidth = 5;
@@ -33,9 +31,10 @@
 			ctx.moveTo(0, 0+i);
 			ctx.lineTo(canvas.width, 0+i);
 			ctx.stroke();
-			i++;
-			if (i > canvas.height) i = 0;
-		}, 2);
+			i+=inc;
+			if (i > canvas.height) inc = -inc;
+			if (i < 0) inc = -inc;
+		}, 20);
 	}
 	draw();
 	</script>
