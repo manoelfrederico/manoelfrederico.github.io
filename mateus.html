@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <link rel="apple-touch-icon" href="/mateus.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Tabuada</title>
+<script>
+    $(document).on('click', 'a', function(e) {
+        e.preventDefault();
+        document.location.href = $(this).attr('href');
+    });
+</script>
 <html>
     <style>
         a:link { 
