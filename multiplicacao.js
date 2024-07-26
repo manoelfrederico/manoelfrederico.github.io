@@ -9,7 +9,17 @@ function getParametro(name){
        return decodeURIComponent(name[1]);
  }
 
+ function input(e) {
+    var tbInput = document.getElementById("resposta");
+    tbInput.value = tbInput.value + e.value;
+}
+
+function del() {
+    var tbInput = document.getElementById("resposta");
+    tbInput.value = tbInput.value.substr(0, tbInput.value.length - 1);
+}
 function body_onload() {
+    document.querySelector("#VirtualKey").style.visibility = 'hidden';
     document.querySelector("#comecar").style.visibility = 'visible';
     document.querySelector("#confirmar").style.visibility = 'hidden';
     document.querySelector("#resposta").style.visibility = 'hidden';
@@ -29,6 +39,7 @@ function body_onload() {
 }
 
 function comecar() {
+    document.querySelector("#VirtualKey").style.visibility = 'visible';
     document.querySelector("#comecar").style.visibility = 'hidden';
     document.querySelector("#confirmar").style.visibility = 'visible';
     document.querySelector("#resposta").style.visibility = 'visible';
@@ -42,6 +53,7 @@ function comecar() {
 }
 
 function confirmar() {
+    document.querySelector("#VirtualKey").style.visibility = 'hidden';
     document.querySelector("#comecar").style.visibility = 'visible';
     document.querySelector("#confirmar").style.visibility = 'hidden';
     document.querySelector("#resposta").style.visibility = 'hidden';
