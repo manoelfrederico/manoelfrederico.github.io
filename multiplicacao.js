@@ -18,6 +18,21 @@ function del() {
     var tbInput = document.getElementById("resposta");
     tbInput.value = tbInput.value.substr(0, tbInput.value.length - 1);
 }
+
+function image(certo) {
+    nome = '';
+    maxImagens = 10;
+    minImagens = 1;
+    if (certo) {
+        nome += 'c';
+    } else {
+        nome += 'e';
+    }
+    aletorio = Math.floor(Math.random() * (maxImagens-minImagens+1))+minImagens;
+    nome += aletorio + ".gif";
+    document.getElementById("certoErrado").src=nome;
+}
+
 function body_onload() {
     document.querySelector("#VirtualKey").style.visibility = 'hidden';
     document.querySelector("#comecar").style.visibility = 'visible';
@@ -46,6 +61,7 @@ function comecar() {
     document.querySelector("#resposta").focus();
     document.querySelector("#sonic").style.visibility = 'hidden';
     document.querySelector("#eggman").style.visibility = 'hidden';
+    document.querySelector("#certoErrado").style.visibility = 'hidden';
 
     numero1 = Math.floor(Math.random() * (max1-min1+1))+min1;
     numero2 = Math.floor(Math.random() * (max2-min2+1))+min2;
@@ -59,12 +75,16 @@ function confirmar() {
     document.querySelector("#resposta").style.visibility = 'hidden';
     if (document.querySelector("#resposta").value == (numero1*numero2)) {
         document.querySelector("#conta").innerHTML = "CERTO";
-        document.querySelector("#sonic").style.visibility = 'visible';
-            acertos++;  
-    } else {
+//        document.querySelector("#sonic").style.visibility = 'visible';
+            acertos++;
+            image(true); 
+            document.querySelector("#certoErrado").style.visibility = 'visible';
+        } else {
         document.querySelector("#conta").innerHTML = "ERRADO: " + numero1+" x "+numero2+"="+ (numero1 * numero2);
         document.querySelector("#eggman").style.visibility = 'visible';
         erros++;
+        image(false); 
+        document.querySelector("#certoErrado").style.visibility = 'visible';
     }
     document.querySelector("#resposta").value = "";
     document.querySelector("#resumo").innerHTML = "acertos("+acertos+") erros("+erros+")";
