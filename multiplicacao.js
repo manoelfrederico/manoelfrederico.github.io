@@ -38,8 +38,7 @@ function body_onload() {
     document.querySelector("#comecar").style.visibility = 'visible';
     document.querySelector("#confirmar").style.visibility = 'hidden';
     document.querySelector("#resposta").style.visibility = 'hidden';
-    document.querySelector("#sonic").style.visibility = 'hidden';
-    document.querySelector("#eggman").style.visibility = 'hidden';
+    document.querySelector("#certoErrado").style.visibility = 'hidden';
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('min1'))
         min1 = parseInt(urlParams.get('min1'));
@@ -59,8 +58,6 @@ function comecar() {
     document.querySelector("#confirmar").style.visibility = 'visible';
     document.querySelector("#resposta").style.visibility = 'visible';
     document.querySelector("#resposta").focus();
-    document.querySelector("#sonic").style.visibility = 'hidden';
-    document.querySelector("#eggman").style.visibility = 'hidden';
     document.querySelector("#certoErrado").style.visibility = 'hidden';
 
     numero1 = Math.floor(Math.random() * (max1-min1+1))+min1;
@@ -75,13 +72,11 @@ function confirmar() {
     document.querySelector("#resposta").style.visibility = 'hidden';
     if (document.querySelector("#resposta").value == (numero1*numero2)) {
         document.querySelector("#conta").innerHTML = "CERTO";
-//        document.querySelector("#sonic").style.visibility = 'visible';
             acertos++;
             image(true); 
             document.querySelector("#certoErrado").style.visibility = 'visible';
         } else {
         document.querySelector("#conta").innerHTML = "ERRADO: " + numero1+" x "+numero2+"="+ (numero1 * numero2);
-        document.querySelector("#eggman").style.visibility = 'visible';
         erros++;
         image(false); 
         document.querySelector("#certoErrado").style.visibility = 'visible';
