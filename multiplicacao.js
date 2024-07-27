@@ -34,11 +34,6 @@ function image(certo) {
 }
 
 function body_onload() {
-    document.querySelector("#VirtualKey").style.visibility = 'hidden';
-    document.querySelector("#comecar").style.visibility = 'visible';
-    document.querySelector("#confirmar").style.visibility = 'hidden';
-    document.querySelector("#resposta").style.visibility = 'hidden';
-    document.querySelector("#certoErrado").style.visibility = 'hidden';
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('min1'))
         min1 = parseInt(urlParams.get('min1'));
@@ -54,10 +49,8 @@ function body_onload() {
 
 function comecar() {
     document.querySelector("#VirtualKey").style.visibility = 'visible';
-    document.querySelector("#comecar").style.visibility = 'hidden';
-    document.querySelector("#confirmar").style.visibility = 'visible';
     document.querySelector("#resposta").style.visibility = 'visible';
-    document.querySelector("#resposta").focus();
+    document.querySelector("#comecar").style.visibility = 'hidden';
     document.querySelector("#certoErrado").style.visibility = 'hidden';
 
     numero1 = Math.floor(Math.random() * (max1-min1+1))+min1;
@@ -67,19 +60,17 @@ function comecar() {
 
 function confirmar() {
     document.querySelector("#VirtualKey").style.visibility = 'hidden';
-    document.querySelector("#comecar").style.visibility = 'visible';
-    document.querySelector("#confirmar").style.visibility = 'hidden';
     document.querySelector("#resposta").style.visibility = 'hidden';
+    document.querySelector("#comecar").style.visibility = 'visible';
+    document.querySelector("#certoErrado").style.visibility = 'visible';
     if (document.querySelector("#resposta").value == (numero1*numero2)) {
         document.querySelector("#conta").innerHTML = "CERTO";
-            acertos++;
-            image(true); 
-            document.querySelector("#certoErrado").style.visibility = 'visible';
-        } else {
+        acertos++;
+        image(true); 
+    } else {
         document.querySelector("#conta").innerHTML = "ERRADO: " + numero1+" x "+numero2+"="+ (numero1 * numero2);
         erros++;
         image(false); 
-        document.querySelector("#certoErrado").style.visibility = 'visible';
     }
     document.querySelector("#resposta").value = "";
     document.querySelector("#resumo").innerHTML = "acertos("+acertos+") erros("+erros+")";

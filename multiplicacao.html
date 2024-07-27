@@ -69,9 +69,9 @@
     <body onload="body_onload()">
         <button id="comecar" onclick="comecar()">começar</button>
         <h1 id="conta"></h1>
-        <input inputmode="numeric" type="number" pattern="[0-9]*" inputmode="numeric" id="resposta" readonly/>
-        <img id="certoErrado" src="c1.gif" />
-        <div id="VirtualKey">
+        <input style="visibility:hidden" inputmode="numeric" type="number" pattern="[0-9]*" inputmode="numeric" id="resposta" readonly/>
+        <img id="certoErrado" style="visibility:hidden" src=".gif" />
+        <div id="VirtualKey" style="visibility:hidden" >
             <table>
                 <tr>
                     <td><input id="btn1" type="button" value="1" onclick="input(this);" /></td>
