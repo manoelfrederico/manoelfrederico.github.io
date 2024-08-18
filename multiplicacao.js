@@ -3,6 +3,9 @@ let min1=0, max1=9;
 let min2=0, max2=9;
 let acertos=0;
 let erros=0;
+let horaInicial = new Date().getTime();
+
+var dif = Math.round((_final - _initial) / (1000 * 60));
 
 function getParametro(name){
     if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
@@ -73,5 +76,11 @@ function confirmar() {
         image(false); 
     }
     document.querySelector("#resposta").value = "";
-    document.querySelector("#resumo").innerHTML = "acertos("+acertos+") erros("+erros+")";
+
+    var timestampGasto = Math.round((new Date().getTime() - horaInicial)/1000);
+    var segGastos = timestampGasto % 60;
+    var minGastos = Math.round(timestampGasto / 60);
+    var horaGastos = Math.round(minGastos / 60);
+    var tempoGasto = String(horaGastos).padStart(2,'0') + ":" + String(minGastos).padStart(2,'0') + ":" + String(segGastos).padStart(2,'0');
+    document.querySelector("#resumo").innerHTML = "acertos("+acertos+") erros("+erros+") tempo="+tempoGasto;
 }
