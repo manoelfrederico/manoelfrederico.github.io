@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparador Tesouro & CDB</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f0e; --surface: #141716; --surface2: #1c201e;
+    --border: #252b28; --accent: #b5f2c0; --accent2: #f2c4b5;
+    --accent3: #b5d4f2; --text: #e8ede9; --muted: #6b7a6e;
+    --win: #6fdc8c; --loss: #fa6e61;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; min-height: 100vh; padding: 32px 20px 60px; }
+  header { text-align: center; margin-bottom: 40px; }
+  header h1 { font-family: 'Fraunces', serif; font-size: clamp(22px, 5vw, 40px); font-weight: 300; color: var(--accent); letter-spacing: -0.5px; margin-bottom: 6px; }
+  header p { color: var(--muted); font-size: 11px; letter-spacing: 0.08em; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 900px; margin: 0 auto 32px; }
+  @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .card.full { grid-column: 1 / -1; }
+  .card-label { font-size: 10px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; margin-bottom: 14px; }
+  .card-sublabel { font-size: 10px; letter-spacing: 0.12em; color: var(--muted); margin: 14px 0 10px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 10px; }
+  .input-row label { color: var(--muted); font-size: 11px; flex: 1; }
+  .input-row input { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; padding: 6px 10px; width: 110px; text-align: right; outline: none; transition: border-color 0.2s; }
+  .input-row input:focus { border-color: var(--accent); }
+  .btn { display: block; width: 100%; max-width: 900px; margin: 0 auto 32px; padding: 14px; background: var(--accent); color: #0d0f0e; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; letter-spacing: 0.1em; border: none; border-radius: 10px; cursor: pointer; transition: opacity 0.2s; }
+  .btn:hover { opacity: 0.85; }
+  .results { max-width: 900px; margin: 0 auto; }
+  .section-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 300; color: var(--accent); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+  .scenario-block { margin-bottom: 36px; }
+  .scenario-header { font-size: 11px; letter-spacing: 0.13em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+  .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+  @media (max-width: 620px) { .compare-grid { grid-template-columns: 1fr; } }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; position: relative; overflow: hidden; }
+  .result-card.winner { border-color: var(--win); }
+  .result-card.winner::before { content: '★ MELHOR'; position: absolute; top: 10px; right: 10px; font-size: 9px; letter-spacing: 0.12em; color: var(--win); background: rgba(111,220,140,0.1); padding: 3px 7px; border-radius: 4px; }
+  .rc-label { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .rc-sub { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .rc-liquido { font-size: 24px; font-family: 'Fraunces', serif; color: var(--accent); margin-bottom: 4px; }
+  .result-card.winner .rc-liquido { color: var(--win); }
+  .rc-ganho { font-size: 14px; font-family: 'Fraunces', serif; color: var(--muted); margin-bottom: 14px; }
+  .rc-line { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-bottom: 5px; }
+  .rc-line span:last-child { color: var(--text); }
+  .rc-line .neg { color: var(--loss); }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: auto; margin-bottom: 32px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: var(--surface2); padding: 10px 14px; text-align: right; color: var(--muted); font-weight: 400; letter-spacing: 0.08em; font-size: 10px; white-space: nowrap; border-bottom: 1px solid var(--border); }
+  th:first-child { text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: right; color: var(--text); white-space: nowrap; }
+  td:first-child { text-align: left; color: var(--muted); }
+  tr:last-child td { border-bottom: none; }
+  .hi { color: var(--accent); } .lo { color: var(--accent2); } .mi { color: var(--accent3); }
+  .tag { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.08em; margin-left: 4px; vertical-align: middle; }
+  .tag-cycle { background: rgba(181,212,242,0.12); color: var(--accent3); }
+  .tag-selic { background: rgba(181,242,192,0.1); color: var(--accent); }
+  .note { background: var(--surface); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 16px 18px; font-size: 11px; color: var(--muted); line-height: 1.8; max-width: 900px; margin: 0 auto 20px; }
+  .note strong { color: var(--text); }
+  #results { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Tesouro Direto × CDB com Reinvestimento</h1>
+  <p>SELIC REINVESTIDO A CADA 5A · IR DIFERIDO NO RESERVA · IR PAGO A CADA CICLO NO CDB · TAXA B3</p>
+</header>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-label">Parâmetros Gerais</div>
+    <div class="input-row"><label>Investimento (R$)</label><input type="number" id="capital" value="1000"></div>
+    <div class="input-row"><label>Taxa SELIC (% a.a.)</label><input type="number" id="selic" value="14.25" step="0.01"></div>
+    <div class="input-row"><label>Taxa B3 Tesouro (% a.a.)</label><input type="number" id="taxaB3" value="0.20" step="0.01"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Tesouro Selic</div>
+    <div class="input-row"><label>Spread sobre SELIC (% a.a.)</label><input type="number" id="spreadSelic" value="0.079" step="0.001"></div>
+    <div style="color:var(--muted);font-size:11px;margin-top:4px">Vence em 5 anos e é reinvestido nas mesmas condições. IR + B3 pagos a cada resgate.</div>
+    <div class="card-sublabel">Tesouro Reserva de Emergência</div>
+    <div class="input-row"><label>Spread sobre SELIC (% a.a.)</label><input type="number" id="spreadReserva" value="0.0" step="0.001"></div>
+    <div style="color:var(--muted);font-size:11px;margin-top:4px">IR diferido até o resgate final. Taxa B3 ao longo de todo o período.</div>
+  </div>
+
+  <div class="card full">
+    <div class="card-label">CDB — % CDI e horizontes de comparação</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div>
+        <div style="color:var(--accent3);font-size:10px;letter-spacing:0.1em;margin-bottom:8px">CDB 1 ANO</div>
+        <div class="input-row"><label>% do CDI</label><input type="number" id="pct1" value="100" step="0.5"></div>
+        <div class="input-row"><label>Horizonte total (a)</label><input type="number" id="hor1" value="10"></div>
+      </div>
+      <div>
+        <div style="color:var(--accent3);font-size:10px;letter-spacing:0.1em;margin-bottom:8px">CDB 2 ANOS</div>
+        <div class="input-row"><label>% do CDI</label><input type="number" id="pct2" value="100" step="0.5"></div>
+        <div class="input-row"><label>Horizonte total (a)</label><input type="number" id="hor2" value="10"></div>
+      </div>
+      <div>
+        <div style="color:var(--accent3);font-size:10px;letter-spacing:0.1em;margin-bottom:8px">CDB 3 ANOS</div>
+        <div class="input-row"><label>% do CDI</label><input type="number" id="pct3" value="100" step="0.5"></div>
+        <div class="input-row"><label>Horizonte total (a)</label><input type="number" id="hor3" value="9"></div>
+      </div>
+      <div>
+        <div style="color:var(--accent3);font-size:10px;letter-spacing:0.1em;margin-bottom:8px">CDB 5 ANOS</div>
+        <div class="input-row"><label>% do CDI</label><input type="number" id="pct5" value="100" step="0.5"></div>
+        <div class="input-row"><label>Horizonte total (a)</label><input type="number" id="hor5" value="10"></div>
+      </div>
+    </div>
+    <div style="color:var(--muted);font-size:11px;margin-top:10px">CDI ≈ SELIC − 0,10%. O CDB paga IR a cada vencimento e reinveste o líquido. A ferramenta também calcula o % CDI mínimo para igualar cada Tesouro.</div>
+  </div>
+</div>
+
+<button class="btn" onclick="calcular()">▶ CALCULAR COM REINVESTIMENTO REAL</button>
+
+<div id="results" class="results">
+  <div id="bloco1" class="scenario-block"></div>
+  <div id="bloco2" class="scenario-block"></div>
+  <div id="bloco3" class="scenario-block"></div>
+  <div id="bloco5" class="scenario-block"></div>
+  <div class="section-title">Breakeven % CDI — mínimo para igualar cada Tesouro (com reinvestimento real)</div>
+  <div class="table-wrap"><table id="breakeven-table"></table></div>
+  <div class="note" id="nota"></div>
+</div>
+
+<script>
+const fmt  = (v,d=2) => v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtR = v => 'R$ '+fmt(v);
+const fmtP = v => fmt(v)+'%';
+
+function irAliq(dias) {
+  if (dias <= 180) return 0.225;
+  if (dias <= 360) return 0.200;
+  if (dias <= 720) return 0.175;
+  return 0.150;
+}
+
+// ── Tesouro Reserva: IR diferido até resgate final, B3 ao longo de todo período ──
+function calcReserva(capital, selic, spread, taxaB3, horizonteTotal) {
+  const taxa = selic + spread;
+  const fatorBruto  = Math.pow(1 + taxa, horizonteTotal);
+  const fatorB3     = Math.pow(1 + taxaB3, horizonteTotal);
+  const fatorAposB3 = fatorBruto / fatorB3;
+  const bruto = capital * fatorAposB3;
+  const rend  = bruto - capital;
+  const aliq  = irAliq(Math.round(horizonteTotal * 365));
+  const ir    = rend * aliq;
+  const liq   = bruto - ir;
+  const b3custo = capital * (fatorBruto - fatorAposB3);
+  return { liq, ganho: liq-capital, ir, irTotal: ir, aliq, b3custo, rentLiqAa: Math.pow(liq/capital,1/horizonteTotal)-1, ciclos:[{tipo:'reserva'}] };
+}
+
+// ── Tesouro Selic: vence em prazoCiclo anos, reinveste ciclo a ciclo ──
+// A cada vencimento: paga IR sobre rendimento após B3, reinveste líquido
+function calcSelicReinvest(capital, selic, spread, taxaB3, prazoCiclo, horizonteTotal) {
+  const taxa = selic + spread;
+  let saldo = capital;
+  let irTotal = 0;
+  let b3Total = 0;
+  let ciclos = [];
+  let anosRestantes = horizonteTotal;
+
+  while (anosRestantes > 1e-9) {
+    const anos = Math.min(prazoCiclo, anosRestantes);
+    const fatorBruto  = Math.pow(1 + taxa, anos);
+    const fatorB3     = Math.pow(1 + taxaB3, anos);
+    const fatorAposB3 = fatorBruto / fatorB3;
+    const bruto = saldo * fatorAposB3;
+    const rend  = bruto - saldo;
+    const b3c   = saldo * (fatorBruto - fatorAposB3);
+    const aliq  = irAliq(Math.round(anos * 365));
+    const ir    = rend * aliq;
+    const liq   = bruto - ir;
+    irTotal += ir; b3Total += b3c;
+    ciclos.push({ anosCiclo: anos, saldoEntrada: saldo, bruto, rend, b3c, aliq, ir, liq });
+    saldo = liq;
+    anosRestantes -= anos;
+  }
+  return { liq: saldo, ganho: saldo-capital, irTotal, b3Total, ciclos, rentLiqAa: Math.pow(saldo/capital,1/horizonteTotal)-1 };
+}
+
+// ── CDB: reinvestimento ciclo a ciclo, IR pago a cada vencimento ──
+function calcCDB(capital, pctCDI, cdi, prazoCDB, horizonteTotal) {
+  const taxa = cdi * (pctCDI / 100);
+  let saldo = capital;
+  let irTotal = 0;
+  let ciclos = [];
+  let anosRestantes = horizonteTotal;
+  while (anosRestantes > 1e-9) {
+    const anos = Math.min(prazoCDB, anosRestantes);
+    const fator = Math.pow(1 + taxa, anos);
+    const bruto = saldo * fator;
+    const rend  = bruto - saldo;
+    const aliq  = irAliq(Math.round(anos * 365));
+    const ir    = rend * aliq;
+    const liq   = bruto - ir;
+    irTotal += ir;
+    ciclos.push({ anosCiclo: anos, saldoEntrada: saldo, bruto, rend, aliq, ir, liq });
+    saldo = liq;
+    anosRestantes -= anos;
+  }
+  return { liq: saldo, ganho: saldo-capital, irTotal, ciclos, rentLiqAa: Math.pow(saldo/capital,1/horizonteTotal)-1 };
+}
+
+// ── Breakeven: % CDI mínimo para CDB igualar alvo líquido ──
+function breakeven(capital, cdi, prazoCDB, horizonte, alvoLiq) {
+  let lo=50, hi=500, mid;
+  for (let i=0; i<120; i++) {
+    mid=(lo+hi)/2;
+    const r=calcCDB(capital,mid,cdi,prazoCDB,horizonte);
+    if (r.liq < alvoLiq) lo=mid; else hi=mid;
+  }
+  return mid;
+}
+
+// ── Renderiza bloco de cenário ──
+function renderBloco(elId, label, capital, tSelic, tReserva, resCDB, pctCDI, cdi, prazoCDB, horizonte, prazoSelic) {
+  const el = document.getElementById(elId);
+  const nCiclosSelic = tSelic.ciclos.length;
+  const items = [
+    { label: 'Tesouro Selic', sub: `+${fmt(prazoSelic*1,0)}a/ciclo · ${nCiclosSelic} ciclo${nCiclosSelic>1?'s':''} · ${horizonte}a`, r: tSelic, tipo: 'selic' },
+    { label: 'Tesouro Reserva', sub: `IR diferido · ${horizonte}a total`, r: tReserva, tipo: 'reserva' },
+    { label: `CDB ${fmtP(pctCDI)} CDI`, sub: `${prazoCDB}a/ciclo · ${resCDB.ciclos.length} ciclo${resCDB.ciclos.length>1?'s':''} · ${horizonte}a`, r: resCDB, tipo: 'cdb' },
+  ];
+  const maxLiq = Math.max(...items.map(i => i.r.liq));
+
+  let cards = '';
+  items.forEach(item => {
+    const r = item.r;
+    const win = r.liq === maxLiq;
+    let irLinhas = '';
+    if (item.tipo === 'selic') {
+      irLinhas = `
+        <div class="rc-line"><span>Taxa B3 total</span><span class="neg">−${fmtR(r.b3Total)}</span></div>
+        <div class="rc-line"><span>IR pago (${r.ciclos.length} resgates)</span><span class="neg">−${fmtR(r.irTotal)}</span></div>`;
+    } else if (item.tipo === 'reserva') {
+      irLinhas = `
+        <div class="rc-line"><span>Taxa B3 (custo)</span><span class="neg">−${fmtR(r.b3custo)}</span></div>
+        <div class="rc-line"><span>IR diferido (${fmtP(r.aliq*100)})</span><span class="neg">−${fmtR(r.ir)}</span></div>`;
+    } else {
+      irLinhas = `<div class="rc-line"><span>IR pago (${r.ciclos.length} ciclos)</span><span class="neg">−${fmtR(r.irTotal)}</span></div>`;
+    }
+
+    cards += `<div class="result-card${win?' winner':''}">
+      <div class="rc-label">${item.label}</div>
+      <div class="rc-sub">${item.sub}</div>
+      <div class="rc-liquido">${fmtR(r.liq)}</div>
+      <div class="rc-ganho">+ ${fmtR(r.ganho)}</div>
+      ${irLinhas}
+      <div class="rc-line"><span>Rent. líq. a.a.</span><span>${fmtP(r.rentLiqAa*100)}</span></div>
+    </div>`;
+  });
+
+  // detalhe ciclos Selic
+  let ciclosSelicHtml = '';
+  tSelic.ciclos.forEach((c,i) => {
+    ciclosSelicHtml += `<tr>
+      <td>Ciclo ${i+1} (${fmt(c.anosCiclo,1)}a)</td>
+      <td>${fmtR(c.saldoEntrada)}</td>
+      <td>${fmtR(c.bruto)}</td>
+      <td class="neg">−${fmtR(c.b3c)}</td>
+      <td class="neg">−${fmtR(c.ir)} (${fmtP(c.aliq*100)})</td>
+      <td class="hi">${fmtR(c.liq)}</td>
+    </tr>`;
+  });
+
+  // detalhe ciclos CDB
+  let ciclosCDBHtml = '';
+  resCDB.ciclos.forEach((c,i) => {
+    ciclosCDBHtml += `<tr>
+      <td>Ciclo ${i+1} (${fmt(c.anosCiclo,1)}a)</td>
+      <td>${fmtR(c.saldoEntrada)}</td>
+      <td>${fmtR(c.bruto)}</td>
+      <td class="neg">−${fmtR(c.ir)} (${fmtP(c.aliq*100)})</td>
+      <td class="hi">${fmtR(c.liq)}</td>
+    </tr>`;
+  });
+
+  el.innerHTML = `
+    <div class="section-title">${label}</div>
+    <div class="scenario-header">Horizonte de ${horizonte} anos · CDI ${fmtP(cdi*100)} · SELIC ${fmtP((+document.getElementById('selic').value/100)*100)}</div>
+    <div class="compare-grid">${cards}</div>
+    <details style="margin-bottom:6px">
+      <summary style="cursor:pointer;color:var(--muted);font-size:11px;padding:8px 0">▸ detalhe ciclos Tesouro Selic <span class="tag tag-selic">reinvestido a cada 5a</span></summary>
+      <div class="table-wrap" style="margin-top:8px">
+        <table>
+          <thead><tr>
+            <th style="text-align:left">Período</th><th>Saldo inicial</th><th>Bruto (após B3)</th><th>Taxa B3</th><th>IR pago</th><th>Líquido reinvestido</th>
+          </tr></thead>
+          <tbody>${ciclosSelicHtml}</tbody>
+        </table>
+      </div>
+    </details>
+    <details style="margin-bottom:12px">
+      <summary style="cursor:pointer;color:var(--muted);font-size:11px;padding:8px 0">▸ detalhe ciclos CDB ${prazoCDB}a <span class="tag tag-cycle">${resCDB.ciclos.length} ciclos</span></summary>
+      <div class="table-wrap" style="margin-top:8px">
+        <table>
+          <thead><tr>
+            <th style="text-align:left">Período</th><th>Saldo inicial</th><th>Bruto</th><th>IR pago</th><th>Líquido reinvestido</th>
+          </tr></thead>
+          <tbody>${ciclosCDBHtml}</tbody>
+        </table>
+      </div>
+    </details>
+  `;
+}
+
+// ── Main ──
+function calcular() {
+  const capital  = +document.getElementById('capital').value;
+  const selic    = +document.getElementById('selic').value / 100;
+  const taxaB3   = +document.getElementById('taxaB3').value / 100;
+  const spreadS  = +document.getElementById('spreadSelic').value / 100;
+  const spreadR  = +document.getElementById('spreadReserva').value / 100;
+  const pct1     = +document.getElementById('pct1').value;
+  const pct2     = +document.getElementById('pct2').value;
+  const pct3     = +document.getElementById('pct3').value;
+  const pct5     = +document.getElementById('pct5').value;
+  const hor1     = +document.getElementById('hor1').value;
+  const hor2     = +document.getElementById('hor2').value;
+  const hor3     = +document.getElementById('hor3').value;
+  const hor5     = +document.getElementById('hor5').value;
+  const cdi      = selic - 0.001;
+  const prazoSelic = 5; // Tesouro Selic vence em 5 anos, reinvestido
+
+  document.getElementById('results').style.display = 'block';
+
+  // Cenário 1: CDB 1a, horizonte 10a
+  const ts1  = calcSelicReinvest(capital, selic, spreadS, taxaB3, prazoSelic, hor1);
+  const tr1  = calcReserva(capital, selic, spreadR, taxaB3, hor1);
+  const cdb1 = calcCDB(capital, pct1, cdi, 1, hor1);
+  renderBloco('bloco1', `CDB 1 ano × ${hor1/1|0} ciclos (${hor1} anos)`, capital, ts1, tr1, cdb1, pct1, cdi, 1, hor1, prazoSelic);
+
+  // Cenário 1: CDB 2a, horizonte 10a
+  const ts2  = calcSelicReinvest(capital, selic, spreadS, taxaB3, prazoSelic, hor2);
+  const tr2  = calcReserva(capital, selic, spreadR, taxaB3, hor2);
+  const cdb2 = calcCDB(capital, pct2, cdi, 2, hor2);
+  renderBloco('bloco2', `CDB 2 anos × ${hor2/2|0} ciclos (${hor2} anos)`, capital, ts2, tr2, cdb2, pct2, cdi, 2, hor2, prazoSelic);
+
+  // Cenário 2: CDB 3a, horizonte 9a
+  const ts3  = calcSelicReinvest(capital, selic, spreadS, taxaB3, prazoSelic, hor3);
+  const tr3  = calcReserva(capital, selic, spreadR, taxaB3, hor3);
+  const cdb3 = calcCDB(capital, pct3, cdi, 3, hor3);
+  renderBloco('bloco3', `CDB 3 anos × ${hor3/3|0} ciclos (${hor3} anos)`, capital, ts3, tr3, cdb3, pct3, cdi, 3, hor3, prazoSelic);
+
+  // Cenário 3: CDB 5a, horizonte 10a
+  const ts5  = calcSelicReinvest(capital, selic, spreadS, taxaB3, prazoSelic, hor5);
+  const tr5  = calcReserva(capital, selic, spreadR, taxaB3, hor5);
+  const cdb5 = calcCDB(capital, pct5, cdi, 5, hor5);
+  renderBloco('bloco5', `CDB 5 anos × ${hor5/5|0} ciclos (${hor5} anos)`, capital, ts5, tr5, cdb5, pct5, cdi, 5, hor5, prazoSelic);
+
+  // ── Tabela breakeven ──
+  const cenarios = [
+    { label: 'CDB 2a · '+hor2+'a', prazo: 2, hor: hor2, tS: ts2, tR: tr2 },
+    { label: 'CDB 3a · '+hor3+'a', prazo: 3, hor: hor3, tS: ts3, tR: tr3 },
+    { label: 'CDB 5a · '+hor5+'a', prazo: 5, hor: hor5, tS: ts5, tR: tr5 },
+  ];
+
+  const thead = `<thead><tr>
+    <th style="text-align:left">Cenário</th>
+    <th>T. Selic líq. <span class="tag tag-selic">5a/ciclo</span></th>
+    <th>T. Reserva líq.</th>
+    <th>% CDI p/ bater Selic</th>
+    <th>% CDI p/ bater Reserva</th>
+    <th>Selic − Reserva</th>
+  </tr></thead>`;
+
+  let tbody = '<tbody>';
+  cenarios.forEach(c => {
+    const beS = breakeven(capital, cdi, c.prazo, c.hor, c.tS.liq);
+    const beR = breakeven(capital, cdi, c.prazo, c.hor, c.tR.liq);
+    const diff = c.tS.liq - c.tR.liq;
+    const sWin = diff >= 0;
+    tbody += `<tr>
+      <td>${c.label} <span class="tag tag-cycle">${c.hor/c.prazo|0} ciclos</span></td>
+      <td class="${sWin?'hi':'lo'}">${fmtR(c.tS.liq)}</td>
+      <td class="${!sWin?'hi':'lo'}">${fmtR(c.tR.liq)}</td>
+      <td class="mi">${fmtP(beS)}</td>
+      <td class="mi">${fmtP(beR)}</td>
+      <td class="${sWin?'hi':'lo'}">${sWin?'+':''}${fmtR(diff)}</td>
+    </tr>`;
+  });
+  tbody += '</tbody>';
+  document.getElementById('breakeven-table').innerHTML = thead + tbody;
+
+  // ── Nota ──
+  const beS2=breakeven(capital,cdi,2,hor2,ts2.liq), beR2=breakeven(capital,cdi,2,hor2,tr2.liq);
+  const beS3=breakeven(capital,cdi,3,hor3,ts3.liq), beR3=breakeven(capital,cdi,3,hor3,tr3.liq);
+  const beS5=breakeven(capital,cdi,5,hor5,ts5.liq), beR5=breakeven(capital,cdi,5,hor5,tr5.liq);
+
+  document.getElementById('nota').innerHTML = `
+    <strong>Lógica do modelo:</strong><br><br>
+    • <strong>Tesouro Selic</strong>: vence em ${prazoSelic} anos, paga IR + Taxa B3 a cada resgate e reinveste o líquido. Spread de ${fmtP(spreadS*100)} sobre SELIC.<br>
+    • <strong>Tesouro Reserva</strong>: Taxa B3 incide ao longo de todo o período, mas o IR só é pago no resgate final (diferimento total).<br>
+    • <strong>CDB</strong>: sem Taxa B3, mas paga IR a cada vencimento. Quanto mais curto o prazo e mais ciclos, maior o custo tributário acumulado.<br><br>
+    <strong>Breakeven CDB 2a (${hor2}a):</strong> precisa de <span class="mi">${fmtP(beS2)}</span> CDI p/ bater Selic e <span class="mi">${fmtP(beR2)}</span> p/ bater Reserva.<br>
+    <strong>Breakeven CDB 3a (${hor3}a):</strong> precisa de <span class="mi">${fmtP(beS3)}</span> CDI p/ bater Selic e <span class="mi">${fmtP(beR3)}</span> p/ bater Reserva.<br>
+    <strong>Breakeven CDB 5a (${hor5}a):</strong> precisa de <span class="mi">${fmtP(beS5)}</span> CDI p/ bater Selic e <span class="mi">${fmtP(beR5)}</span> p/ bater Reserva.<br><br>
+    <strong>Vantagem do Reserva sobre o Selic:</strong> o IR diferido compõe por mais tempo. O Selic paga IR a cada 5 anos mesmo sem retirar o dinheiro — o Reserva evita isso completamente.
+  `;
+}
+
+calcular();
+</script>
+</body>
+</html>
