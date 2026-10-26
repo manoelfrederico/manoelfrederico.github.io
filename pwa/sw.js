@@ -1,3 +1,4 @@
+/* global clients */
 // public/sw.js
 
 // Escuta eventos de push enviados pelos servidores da Apple/Google
