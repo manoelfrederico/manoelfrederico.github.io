@@ -9,9 +9,9 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body || 'Você tem uma nova mensagem!',
-    icon: '/icon-192x192.png', // Ajuste para o caminho do ícone do seu PWA
-    badge: '/icon-192x192.png',
-    data: data.url || '/'
+    icon: '/pwa/icon1.png',
+    badge: '/pwa/icon1.png',
+    data: '/pwa/'
   };
 
   event.waitUntil(
@@ -19,17 +19,22 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Ação ao clicar na notificação
+// Ação ao clicar na notificação: foca o PWA ou abre /pwa/
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
-  // Abre a URL configurada ou foca na janela atual
+
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      if (clientList.length > 0) {
-        return clientList[0].focus();
-      }
-      return clients.openWindow(event.notification.data);
+      const pwaClient = clientList.find((client) => {
+        try {
+          const path = new URL(client.url).pathname;
+          return path === '/pwa' || path.startsWith('/pwa/');
+        } catch {
+          return false;
+        }
+      });
+      if (pwaClient) return pwaClient.focus();
+      return clients.openWindow('/pwa/');
     })
   );
 });
