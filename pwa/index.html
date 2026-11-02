@@ -10,6 +10,49 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#ffffff" />
     <title>Feed Processor</title>
+    <script>
+      (function () {
+        try {
+          var pathname = window.location.pathname || '/pwa/';
+          var search = window.location.search || '';
+          var hash = window.location.hash || '';
+
+          var hasHashRoute = hash && hash.indexOf('#/') === 0;
+          var isPwaRoot = pathname === '/pwa' || pathname === '/pwa/';
+          var isPwaDeepLink = pathname.indexOf('/pwa/') === 0 && pathname !== '/pwa/' && pathname !== '/pwa';
+
+          var params = new URLSearchParams(search);
+          var pageFromQuery = params.get('page') || params.get('screen') || params.get('route');
+
+          if (pageFromQuery && !hasHashRoute) {
+            window.location.replace('/pwa/#/' + encodeURIComponent(pageFromQuery) + search);
+            return;
+          }
+
+          if (isPwaDeepLink && !hasHashRoute) {
+            var rest = pathname.replace(/^\/pwa\/+/, '').replace(/\/+$/, '');
+            if (rest && !/\.[a-z0-9]+$/i.test(rest)) {
+              window.location.replace('/pwa/#/' + encodeURIComponent(rest) + search + hash);
+              return;
+            }
+          }
+
+          if (!hasHashRoute && pathname === '/pwa/investidor10') {
+            window.location.replace('/pwa/#/investidor10' + search);
+            return;
+          }
+
+          if (isPwaRoot && (hash.indexOf('#/') === 0 || pageFromQuery)) {
+            var safeHash = hash && hash.indexOf('#/') === 0 ? hash : '#/' + encodeURIComponent(pageFromQuery || 'investidor10');
+            if (window.location.pathname !== '/pwa/' && window.location.pathname !== '/pwa') {
+              window.location.replace('/pwa/' + safeHash + search);
+            }
+          }
+        } catch (error) {
+          console.warn('pwa deep link redirect failed', error);
+        }
+      })();
+    </script>
     <script type="module" crossorigin src="/pwa/assets/index-BdTTyS4J.js"></script>
     <link rel="stylesheet" crossorigin href="/pwa/assets/index-CAlr8AIm.css">
   </head>
