@@ -1,40 +1,53 @@
 /* global clients */
 // public/sw.js
 
-// Escuta eventos de push enviados pelos servidores da Apple/Google
 self.addEventListener('push', (event) => {
   if (!event.data) return;
 
   const data = event.data.json();
-
   const options = {
-    body: data.body || 'Você tem uma nova mensagem!',
+    body: data.body || 'You have a new message!',
     icon: '/pwa/icon1.png',
     badge: '/pwa/icon1.png',
-    data: '/pwa/'
+    data: { url: data.url || '/pwa/' }
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Notificação', options)
+    self.registration.showNotification(data.title || 'Notification', options)
   );
 });
 
-// Ação ao clicar na notificação: foca o PWA ou abre /pwa/
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      const pwaClient = clientList.find((client) => {
-        try {
-          const path = new URL(client.url).pathname;
-          return path === '/pwa' || path.startsWith('/pwa/');
-        } catch {
-          return false;
-        }
-      });
-      if (pwaClient) return pwaClient.focus();
-      return clients.openWindow('/pwa/');
-    })
-  );
+  event.waitUntil((async () => {
+    const requestedUrl = event.notification.data && event.notification.data.url;
+    let targetUrl;
+
+    try {
+      targetUrl = new URL(requestedUrl || '/pwa/', self.location.origin);
+      if (targetUrl.origin !== self.location.origin || !targetUrl.pathname.startsWith('/pwa')) {
+        targetUrl = new URL('/pwa/', self.location.origin);
+      }
+    } catch {
+      targetUrl = new URL('/pwa/', self.location.origin);
+    }
+
+    const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const pwaClient = clientList.find((client) => {
+      try {
+        const clientUrl = new URL(client.url);
+        return clientUrl.origin === self.location.origin && clientUrl.pathname.startsWith('/pwa');
+      } catch {
+        return false;
+      }
+    });
+
+    if (pwaClient) {
+      const navigatedClient = await pwaClient.navigate(targetUrl.href);
+      return (navigatedClient || pwaClient).focus();
+    }
+
+    return clients.openWindow(targetUrl.href);
+  })());
 });
